@@ -81,7 +81,7 @@ options = optimoptions('fsolve','Display','off');
 disp('DE Iter      Norm');
 iter = 0;
 tic
-while err1>tol || iter<1
+while err1>tol
     
     % Saving old values
     oldp    = price;
@@ -97,6 +97,17 @@ while err1>tol || iter<1
             emu(j,i) = betta*(1+r)*interp1(B,mup',bp(j,i),'linear','extrap')*T(j,:)';
         end
     end
+    
+%     for ii=1:NB
+%         for jj=1:NT*NN
+%             for kk=1:NT*NN
+%                 aux(jj,ii,kk)=betta*(1+r)*interp1(B,mup(kk,:)',bp(jj,ii),'linear')*T(jj,kk);
+%             end
+%         end
+%     end
+%     emu2=sum(aux,3);
+%     asdf=emu2-emu; if max(abs(asdf(:)))>tol;warning('problem!'),end
+        
 %     for j=1:NT*NN
 %         emu(j,:) = (betta*(1+r)*interp1(B,mup',bp(j,:),'linear','extrap')*T(j,:)')';
 %     end
@@ -363,13 +374,31 @@ cSIMd   = 100*(cSIM./mean(cSIM)-1);
 cSP_SIM = (omega*(cTSP_SIM.^-eta)+(1-omega)*(yNSIM.^-eta)).^(-1/eta);
 cSP_SIMd= 100*(cSP_SIM./mean(cSP_SIM)-1);
 
-% Plots
-subplot(1,2,1)
-h1 = hist(bpSP_SIM,bmin:0.001:bmax);
-hist(bpSIM,bmin:0.001:bmax),hold on,plot(bmin:0.001:bmax,h1,'r','LineWidth',1.5)
-legend('Decentralized equilibrium','Social planner')
+%% Plots
 
-subplot(1,2,2)
-h2 = hist(cSP_SIM,0:0.001:1.1876);
-hist(cSIM,0:0.001:1.1876),hold on,plot(0:0.001:1.1876,h2,'r','LineWidth',1.5)
-legend('Decentralized equilibrium','Social planner')
+de  = [0.9333 0.1 0];
+sp  = [0 0.5 1];
+de1 = 2.5;
+sp1 = 1.5;
+
+f0 = figure(1);
+[f,xic]     = ksdensity(bpSIM);
+[f2,xic2]   = ksdensity(bpSP_SIM);
+plot(xic,f)
+plot(xic,f,'LineWidth',de1,'LineStyle','-','color',de),hold on,
+plot(xic2,f2,'LineWidth',sp1,'LineStyle','--','color',sp),%xlim([bmin bmax])
+legend('Decentralized equilibrium','Social planner'),set(gca,'FontSize',16)
+xlabel('$B_t$'),ylabel('Probability')
+% fn = strcat(tdir,'simulL_B.eps');
+% print(f0,'-depsc',fn)
+
+f0 = figure(2);
+[f,xic]     = ksdensity(cSIMd);
+[f2,xic2]   = ksdensity(cSP_SIMd);
+plot(xic,f)
+plot(xic,f,'LineWidth',de1,'LineStyle','-','color',de),hold on,
+plot(xic2,f2,'LineWidth',sp1,'LineStyle','--','color',sp)
+legend('Decentralized equilibrium','Social planner'),set(gca,'FontSize',16)
+xlabel('Percentage change in consumption'),ylabel('Probability')
+% fn = strcat(tdir,'simulL_Cd.eps');
+% print(f0,'-depsc',fn)
